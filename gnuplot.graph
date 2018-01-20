@@ -1,0 +1,18 @@
+#! /usr/bin/gnuplot -persist
+set terminal postscript eps enhanced color solid
+set output "result.ps"
+#set terminal png size 800, 600
+#set output "result.png"
+#set multiplot layout 2,1
+
+
+set grid xtics ytics
+#set xtics  25
+set log yx
+set xlabel "Freq, Hz" 
+set ylabel "Amp, dB"
+
+set xrange [1:22050]
+set yrange [0.00001:100000]
+
+plot "test.txt" using 1:2 title "AFC" with lines linestyle 1
