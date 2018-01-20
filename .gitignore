@@ -1,0 +1,7 @@
+*.ps
+*.wav
+test.txt
+*.o
+fft_an
+cmake-build-debug/
+.idea/
