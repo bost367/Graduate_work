@@ -30,7 +30,6 @@ int is_big_endian(void) {
 
 void check(const struct wavfile* header, char* filename) {
 
-	// if wav file isn't the same than the current environment we quit
 	if (is_big_endian()) {
 		if (memcmp(header->id, "RIFX", 4) != 0) {
 			fprintf(stderr, "ERROR: %s is not a big endian wav file\n", filename); 
@@ -42,36 +41,32 @@ void check(const struct wavfile* header, char* filename) {
 			exit(1);
 		}
 	}
-
 	if (memcmp(header->wavefmt, "WAVEfmt ", 8) != 0 || memcmp(header->data, "data", 4) != 0) {
 		fprintf(stderr, "ERROR: Not wav format\n"); 
-		exit(1); 
+		exit(1);
 	}
-
 	if (header->format != 16) {
 		fprintf(stderr, "\nERROR: not 16 bit wav format.");
 		exit(1);
 	}
-
-	fprintf(stderr,"format: %d bits", header->format);
-	if (header->format == 16) {
-		fprintf(stderr, ", PCM");
-	} else {
-		fprintf(stderr, ", not PCM (%d)", header->format);
-	}
-	if (header->pcm == 1) {
-		fprintf(stderr, " uncompressed" );
-	} else {
-		fprintf(stderr, " compressed" );
-	}
-
 	if (memcmp(header->data, "data", 4) != 0) {
-		fprintf(stderr, "ERROR: Prrroblem?\n"); 
-		exit(1); 
+		fprintf(stderr, "ERROR: Prrroblem?\n");
+		exit(1);
 	}
 }
 
 void print_header_info(const struct wavfile* header){
+    if (header->pcm == 1) {
+        fprintf(stdout, " uncompressed" );
+    } else {
+        fprintf(stdout, " compressed" );
+    }
+    fprintf(stdout," format: %d bits", header->format);
+    if (header->format == 16) {
+        fprintf(stdout, ", PCM");
+    } else {
+        fprintf(stdout, ", not PCM (%d)", header->format);
+    }
 	fprintf(stdout, ", channel %d", header->pcm);
 	fprintf(stdout, ", freq %d", header->frequency);
 	fprintf(stdout, ", %d bytes per sec", header->bytes_per_second);
@@ -108,8 +103,6 @@ int main(int argc, char *argv[]) {
 	long int size_array = 1 << (int) (log2(header.bytes_in_data/header.bytes_by_capture));
 	printf("size array=%ld \n", size_array);
 	
-	fprintf(stderr, "wav format\n");
-
 //*****************************************************//
 	FILE* logfile;
 	logfile = fopen("test.txt", "w+");
@@ -120,9 +113,9 @@ int main(int argc, char *argv[]) {
 //*****************************************************//	
 	
 	//fft!!!
-	float *c;  // массив поворотных множителей БПФ
-	float *in; // входной массив
-	float *out;// выходной массив
+	float *c;
+	float *in;
+	float *out;
 	
 	c = calloc(size_array*2, sizeof(float));
 	in = calloc(size_array*2, sizeof(float));
@@ -135,8 +128,6 @@ int main(int argc, char *argv[]) {
 	int j = 0;
 	
 	while(fread(&value, sizeof(value), 1, wav) ) {
-
-		//fprintf(logfile,"%d %hi\n",i, value);
 		in[j] = (float) value;
 		j += 2;
 		i++;
@@ -144,23 +135,21 @@ int main(int argc, char *argv[]) {
 	}
 	fft_calc(p2, c,	in,	out, 1);
 	double delta = ((float) header.frequency)/(float) size_array;
-	//printf("delta=%3.10f",delta);
 	double cur_freq = 0;
 	
-	double * ampl;
+	double* ampl;
 	ampl = calloc(size_array*2, sizeof(double));
 	
 	double max;
 	int start_max = 0;
 	int pos_max = 0;
-	//for(i = 0; i < (2*size_array); i += 2) {
-	for (i = 0; i < (size_array); i += 2) {
-		fprintf(logfile, "%.6f %f\n", cur_freq, (sqrt(out[i]*out[i] + out[i+1]*out[i+1])));
+	for (i = 0; i < size_array; i += 2) {
+        double cur_ampl = sqrt(out[i]*out[i] + out[i+1]*out[i+1]);
+		fprintf(logfile, "%.6f %f\n", cur_freq, (cur_ampl));
 		ampl[i] = cur_freq; //freq
-		ampl[i+1] = sqrt(out[i]*out[i] + out[i+1]*out[i+1]); //amp
+		ampl[i+1] = cur_ampl; //amp
 		
-		if(((ampl[i+1]-160) >0 ) && (!start_max)) {
-			//printf("firstmax=%.3f\n",ampl[i+1]);
+		if(((ampl[i+1]-160) > 0 ) && (!start_max)) {
 			start_max = 1;
 			max = ampl[i+1];
 			pos_max = i;
@@ -172,17 +161,11 @@ int main(int argc, char *argv[]) {
 				pos_max = i;
 				}
 			} else {
-				printf("Max Freq = %.3f , amp =%.3f\n",ampl[pos_max],ampl[pos_max+1]);
+				printf("Max Freq=%.3f , amp=%.3f\n",ampl[pos_max],ampl[pos_max+1]);
 				start_max = 0;
 			}
 		}
-		
-		
 		cur_freq += delta;
-	}
-	
-	for(i = 2; i < (2*size_array-2); i += 2) {
-		//fprintf(logfile,"%.6f %f\n",ampl[i], (ampl[i-1]-ampl[i+3])/2); // df/dx
 	}
 	
 	free(c);
