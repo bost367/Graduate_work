@@ -5,3 +5,5 @@ test.txt
 fft_an
 cmake-build-debug/
 .idea/
+sinus_generator
+fft
