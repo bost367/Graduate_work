@@ -1,4 +1,4 @@
-CC=gcc
+CC=gcc -Wall 
 
 #build sinus_generator
 sn_gn: make_wav.o make_sin.o
@@ -22,4 +22,4 @@ fft_an.o: fft_an.c
 	$(CC) -c fft_an.c -o fft_an.o
 
 clean:
-	rm *.o
+	rm *.o *.wav
