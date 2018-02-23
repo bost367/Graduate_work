@@ -149,8 +149,9 @@ void fft_shift(int p, float *data)
 {
     int n = 1 << p; // число точек БПФ
     float *buf = (float*) malloc(sizeof(float) * 2 * n);
-    if (buf == (float*) NULL)
-        FFT_DBG("fft.c: malloc return NULL in fft_shift()!");
+	if (buf == (float*)NULL)
+		return;
+        //FFT_DBG("fft.c: malloc return NULL in fft_shift()!");
     else
     {
         memcpy(buf, data, sizeof(float) * 2 * n);
@@ -158,4 +159,16 @@ void fft_shift(int p, float *data)
         memcpy(data, buf + n, sizeof(float) * n);
         free((void*) buf);
     }
+}
+
+int fft_binary_inversion(int p, int i)
+{
+	int j = 0;
+	while (p-- > 0)
+	{
+		j <<= 1;
+		j |= i & 1;
+		i >>= 1;
+	}
+	return j;
 }
