@@ -6,41 +6,18 @@
 #include "fft.h"
 #include "wavr.h"
 
-void caltFFT(long int* size, int* p, double* freequency, FILE* wav)
+void calcFFT(long int* size, int* p, double* freequency, long* in, FILE* logfile)
 {
-	//*****************************************************//
-	FILE* logfile;
-	logfile = fopen("test.txt", "w+");
-	if (!logfile) {
-		printf("Failed open file, error\n");
-		return 0;
-	}
-	//*****************************************************//	
-
 	long int size_array = *size;
 	int p2 = *p;
 	double delta = *freequency;
-	//fft!!!
 	float *c;
-	float *in;
 	float *out;
 
 	c = calloc(size_array * 2, sizeof(float));
-	in = calloc(size_array * 2, sizeof(float));
 	out = calloc(size_array * 2, sizeof(float));
 
 	fft_make(p2, c);// функция расчёта поворотных множителей для БПФ
-
-	int16_t value;
-	int i = 0;
-	int j = 0;
-
-	while (fread(&value, sizeof(value), 1, wav)) {
-		in[j] = (float)value;
-		j += 2;
-		i++;
-		if (i > size_array) break;
-	}
 	fft_calc(p2, c, in, out, 1);
 	
 	double cur_freq = 0;
@@ -53,7 +30,7 @@ void caltFFT(long int* size, int* p, double* freequency, FILE* wav)
 	int pos_max = 0;
 	for (int i = 0; i < size_array; i += 2) {
 		double cur_ampl = sqrt(out[i] * out[i] + out[i + 1] * out[i + 1]);
-		fprintf(logfile, "%.6f %f\n", cur_freq, (cur_ampl));
+		fprintf(logfile, "%.6f %f\n", cur_freq, cur_ampl);
 		ampl[i] = cur_freq; //freq
 		ampl[i + 1] = cur_ampl; //amp
 
@@ -79,11 +56,21 @@ void caltFFT(long int* size, int* p, double* freequency, FILE* wav)
 	}
 
 	free(c);
-	free(in);
 	free(out);
 	free(ampl);
-	fclose(logfile);
+}
 
+void fillArray(float* in, const int* size_array, FILE* wav) {
+	int16_t value;
+	int i = 0;
+	int j = 0;
+
+	while (fread(&value, sizeof(value), 1, wav)) {
+		in[j] = (float)value;
+		j += 2;
+		i++;
+		if (i > *size_array) break;
+	}
 }
 
 int main(int argc, char *argv[])
@@ -97,7 +84,6 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	// read header
 	if (fread(&header, sizeof(header), 1, wav) < 1) {
 		fprintf(stderr, "Can't read input file header %s\n", filename);
 		exit(1);
@@ -108,15 +94,25 @@ int main(int argc, char *argv[])
 	double frequency;
 	check(&header, filename);
 
-	printf("size after function = %d\nstepen' = %d, frequuency afrter function = %d", size_array, p2, frequency);
 	getWavInfo(&size_array, &p2, &frequency, &header);
 
-	caltFFT(&size_array, &p2, &frequency, wav);
+	float* in = calloc(size_array * 2, sizeof(float));
+	fillArray(in, &size_array, wav);
+
+	FILE* logfile;
+	logfile = fopen("test.txt", "w+");
+	if (!logfile) {
+		printf("Failed open file, error\n");
+		return 0;
+	}
+
+	calcFFT(&size_array, &p2, &frequency, in, logfile);
 
 	fclose(wav);
+	fclose(logfile);
+	free(in);
 	exit(0);
 }
-
 
 void getWavInfo(long int* size_array, int* p, double* freequency, const struct wavfile* header)
 {
