@@ -6,4 +6,7 @@ fft_an
 cmake-build-debug/
 .idea/
 sinus_generator
-fft
+fft 
+*.vcxproj*
+bin
+obj
