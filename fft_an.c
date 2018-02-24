@@ -12,7 +12,7 @@
 #define BUF_TYPE unsigned char
 #define SAMPLE_RATE (96000) //96000
 #define BUF_SIZE (65536)
-#define DEGREE (16)
+#define DEGREE (5) //16
 
 void calcFFT(int size_array, int p2, int delta, BUF_TYPE* in, FILE* logfile)
 {
