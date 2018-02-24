@@ -12,15 +12,15 @@
 #define BUF_TYPE unsigned char
 #define SAMPLE_RATE (96000) //96000
 #define BUF_SIZE (65536)
-#define DEGREE (5) //16
+#define DEGREE (15) //16
 
-void calcFFT(int size_array, int p2, int delta, BUF_TYPE* in, FILE* logfile)
+void calcFFT(int size_array, int p2, double delta, BUF_TYPE* in, FILE* logfile)
 {
 	float *c;
 	float *out;
 
-	c = calloc(size_array * 2, sizeof(BUF_TYPE));
-	out = calloc(size_array * 2, sizeof(BUF_TYPE));
+	c = calloc(size_array * 2, sizeof(float));
+	out = calloc(size_array * 2, sizeof(float));
 
 	fft_make(p2, c);// функция расчёта поворотных множителей для БПФ
 	fft_calc(p2, c, in, out, 1);
@@ -91,7 +91,8 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	calcFFT((int) (BUF_SIZE / 2), DEGREE, 1/SAMPLE_RATE, buffer, logfile);
+	double delta = (double) ((SAMPLE_RATE * 1.0) / BUF_SIZE);
+	calcFFT((int) (BUF_SIZE / 2), DEGREE, delta, buffer, logfile);
 
 	fclose(logfile);
 	free(buffer);
