@@ -120,8 +120,9 @@ void getWavInfo(long int* size_array, int* p, double* freequency, const struct w
 	printf("\nchunk=%d\n", header->bytes_in_data / header->bytes_by_capture);
 	//показатель двойки массива
 	*p = (int) (log2(header->bytes_in_data / header->bytes_by_capture));
-	printf("log2=%d\n", p);
+	printf("log2=%d\n", *p);
 	*size_array = 1 << (int)(log2(header->bytes_in_data / header->bytes_by_capture));
-	printf("size array=%ld \n", size_array);
+	printf("size array=%ld \n", *size_array);
 	*freequency = ((float) header->frequency) / (float) *size_array;
+	printf("freq=%.4f \n", *freequency);
 }
