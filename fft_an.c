@@ -9,12 +9,12 @@
 	#define M_PI 3.14159265358979323846
 #endif
 
-#define BUF_TYPE unsigned char
 #define SAMPLE_RATE (96000) //96000
-#define BUF_SIZE (65536)
-#define DEGREE (15) //16
+#define BUF_SIZE (16384)
+#define DEGREE (14)
+#define FREQUENCY (900)
 
-void calcFFT(int size_array, int p2, double delta, BUF_TYPE* in, FILE* logfile)
+void calcFFT(int size_array, int p2, double delta, float* in, FILE* logfile)
 {
 	float *c;
 	float *out;
@@ -80,8 +80,8 @@ void fillArray(float* in, const int* size_array, FILE* wav) {
 
 int main(int argc, char *argv[])
 {
-	BUF_TYPE* buffer;
-	buffer = calloc(BUF_SIZE, sizeof(BUF_TYPE));
+	float* buffer;
+	buffer = calloc(BUF_SIZE * 2, sizeof(float));
 	writeSinForFFT(buffer);
 
 	FILE* logfile;
@@ -92,33 +92,31 @@ int main(int argc, char *argv[])
 	}
 
 	double delta = (double) ((SAMPLE_RATE * 1.0) / BUF_SIZE);
-	calcFFT((int) (BUF_SIZE / 2), DEGREE, delta, buffer, logfile);
+
+	printf("delta = %.5f\n", delta);
+	calcFFT(BUF_SIZE, DEGREE, delta, buffer, logfile);
 
 	fclose(logfile);
 	free(buffer);
 	exit(0);
 }
 
-void writeSinForFFT(BUF_TYPE* buffer) {
-	int f = 1300;
-	int amplitude = 125;
-	for (int i = 0; i < (int) (BUF_SIZE / 2); i++) {
-		*buffer += (BUF_TYPE)((amplitude * sin((float)(2.0 * M_PI * i * f / SAMPLE_RATE))) + amplitude);
-		buffer += 2;
+void writeSinForFFT(float* buffer) 
+{
+	int amplitude = 25000;
+	for (int i = 0; i < BUF_SIZE * 2; i += 2) {
+		*buffer += (float)((amplitude * sin((float)(2.0 * M_PI * i * FREQUENCY / SAMPLE_RATE))));
 	}
 }
 
-void writeUsualSin() {
-	int f = 1300;
-	BUF_TYPE buffer[(int)BUF_SIZE];
-	int amplitude = 125;
-
-	for (int i = 0; i < BUF_SIZE; i++) {
-		buffer[i] += (BUF_TYPE)((amplitude * sin((float)(2.0 * M_PI * i * f / SAMPLE_RATE))) + amplitude);
-	}
+void writeUsualSin() 
+{
+	int buffer[BUF_SIZE];
+	int amplitude = 500;
 
 	FILE* logfile;
-	logfile = fopen("test.txt", "w+");
+	logfile = fopen("qwe.txt", "w+");
+
 	if (!logfile) {
 		printf("Failed open file, error\n");
 		return 0;
@@ -126,7 +124,10 @@ void writeUsualSin() {
 
 	float cur_freq = 0;
 	for (int i = 0; i < BUF_SIZE; i++) {
+		buffer[i] += (int)((amplitude * sin((float)(2.0 * M_PI * i * FREQUENCY / SAMPLE_RATE))));
 		fprintf(logfile, "%.6f %d.0\n", cur_freq, buffer[i]);
 		cur_freq += (float) 1.0 / SAMPLE_RATE;
 	}
+
+	fclose(logfile);
 }
