@@ -65,23 +65,10 @@ void calcFFT(int size_array, int p2, double delta, float* in, FILE* logfile)
 	free(ampl);
 }
 
-void fillArray(float* in, const int* size_array, FILE* wav) {
-	int16_t value;
-	int i = 0;
-	int j = 0;
-
-	while (fread(&value, sizeof(value), 1, wav)) {
-		in[j] = (float)value;
-		j += 2;
-		i++;
-		if (i > *size_array) break;
-	}
-}
-
 int main(int argc, char *argv[])
 {
 	int* buffer;
-	buffer = calloc(BUF_SIZE * 2, sizeof(float));
+	buffer = calloc(BUF_SIZE * 2, sizeof(int));
 	writeSinForFFT(buffer);
 
 	FILE* logfile;
@@ -105,15 +92,8 @@ void writeSinForFFT(float* buffer)
 {
 	int amplitude = 32000;
 	for (int i = 0; i < BUF_SIZE * 2; i += 2) {
-		buffer[i] += (int)((amplitude * sin((float)(2.0 * M_PI * i * FREQUENCY / SAMPLE_RATE))));
+		buffer[i] += (int)((amplitude * sin((float)(M_PI * i * FREQUENCY / SAMPLE_RATE))));
 	}
-
-	FILE* f;
-	f = fopen("qwe.txt", "w+");
-	for (int i = 0; i < BUF_SIZE * 2; i++) {
-		fprintf(f, "%.5f\n", buffer[i]);
-	}
-	fclose(f);
 }
 
 void writeUsualSin() 
