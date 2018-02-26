@@ -9,7 +9,7 @@
 	#define M_PI 3.14159265358979323846
 #endif
 
-#define SAMPLE_RATE (96000) //96000
+#define SAMPLE_RATE (96000)
 #define BUF_SIZE (16384)
 #define DEGREE (14)
 #define FREQUENCY (900)
@@ -80,7 +80,7 @@ void fillArray(float* in, const int* size_array, FILE* wav) {
 
 int main(int argc, char *argv[])
 {
-	float* buffer;
+	int* buffer;
 	buffer = calloc(BUF_SIZE * 2, sizeof(float));
 	writeSinForFFT(buffer);
 
@@ -107,6 +107,13 @@ void writeSinForFFT(float* buffer)
 	for (int i = 0; i < BUF_SIZE * 2; i += 2) {
 		buffer[i] += (int)((amplitude * sin((float)(2.0 * M_PI * i * FREQUENCY / SAMPLE_RATE))));
 	}
+
+	FILE* f;
+	f = fopen("qwe.txt", "w+");
+	for (int i = 0; i < BUF_SIZE * 2; i++) {
+		fprintf(f, "%.5f\n", buffer[i]);
+	}
+	fclose(f);
 }
 
 void writeUsualSin() 
@@ -128,6 +135,6 @@ void writeUsualSin()
 		fprintf(logfile, "%.6f %d.0\n", cur_freq, buffer[i]);
 		cur_freq += (float) 1.0 / SAMPLE_RATE;
 	}
-
+	
 	fclose(logfile);
 }
