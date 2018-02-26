@@ -22,12 +22,20 @@ void calcFFT(int size_array, int p2, double delta, float* in, FILE* logfile)
 	c = calloc(size_array * 2, sizeof(float));
 	out = calloc(size_array * 2, sizeof(float));
 
+	float* p1;
+	const float* p0;
+
 	fft_make(p2, c);// функция расчёта поворотных множителей для БПФ
-	fft_calc(p2, c, in, out, 1);
+
+	fft_calc_(p2, in, out, p1, p0);
+	fft_calc__(p2, c, out, p1, p0, 1);
+
+	//fft_calc(p2, c, in, out, 1);
 	
 	double cur_freq = 0;
 
 	double* ampl;
+
 	ampl = calloc(size_array * 2, sizeof(double));
 
 	double max;
@@ -67,8 +75,8 @@ void calcFFT(int size_array, int p2, double delta, float* in, FILE* logfile)
 
 int main(int argc, char *argv[])
 {
-	int* buffer;
-	buffer = calloc(BUF_SIZE * 2, sizeof(int));
+	float* buffer;
+	buffer = calloc(BUF_SIZE * 2, sizeof(float));
 	writeSinForFFT(buffer);
 
 	FILE* logfile;
@@ -92,7 +100,7 @@ void writeSinForFFT(float* buffer)
 {
 	int amplitude = 32000;
 	for (int i = 0; i < BUF_SIZE * 2; i += 2) {
-		buffer[i] += (int)((amplitude * sin((float)(M_PI * i * FREQUENCY / SAMPLE_RATE))));
+		buffer[i] += (float)((amplitude * sin((float)(M_PI * i * FREQUENCY / SAMPLE_RATE))));
 	}
 }
 
