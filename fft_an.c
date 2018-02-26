@@ -103,9 +103,9 @@ int main(int argc, char *argv[])
 
 void writeSinForFFT(float* buffer) 
 {
-	int amplitude = 25000;
+	int amplitude = 32000;
 	for (int i = 0; i < BUF_SIZE * 2; i += 2) {
-		*buffer += (float)((amplitude * sin((float)(2.0 * M_PI * i * FREQUENCY / SAMPLE_RATE))));
+		buffer[i] += (int)((amplitude * sin((float)(2.0 * M_PI * i * FREQUENCY / SAMPLE_RATE))));
 	}
 }
 
