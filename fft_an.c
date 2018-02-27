@@ -14,28 +14,11 @@
 #define DEGREE (14)
 #define FREQUENCY (900)
 
-void calcFFT(int size_array, int p2, double delta, float* in, FILE* logfile)
+void calcFFT(int size_array, double delta, float* out, FILE* logfile)
 {
-	float *c;
-	float *out;
-
-	c = calloc(size_array * 2, sizeof(float));
-	out = calloc(size_array * 2, sizeof(float));
-
-	float* p1;
-	const float* p0;
-
-	fft_make(p2, c);// функция расчёта поворотных множителей для БПФ
-
-	fft_calc_(p2, in, out, p1, p0);
-	fft_calc__(p2, c, out, p1, p0, 1);
-
-	//fft_calc(p2, c, in, out, 1);
-	
 	double cur_freq = 0;
 
 	double* ampl;
-
 	ampl = calloc(size_array * 2, sizeof(double));
 
 	double max;
@@ -68,7 +51,6 @@ void calcFFT(int size_array, int p2, double delta, float* in, FILE* logfile)
 		cur_freq += delta;
 	}
 
-	free(c);
 	free(out);
 	free(ampl);
 }
@@ -88,11 +70,25 @@ int main(int argc, char *argv[])
 
 	double delta = (double) ((SAMPLE_RATE * 1.0) / BUF_SIZE);
 
-	printf("delta = %.5f\n", delta);
-	calcFFT(BUF_SIZE, DEGREE, delta, buffer, logfile);
+	float *out;
+	out = calloc(BUF_SIZE * 2, sizeof(float));
+
+	float* p1;
+	const float* p0;
+
+	fft_calc_(DEGREE, buffer, out, p1, p0);
+	free(buffer);
+
+	float *c;
+	c = calloc(BUF_SIZE * 2, sizeof(float));
+	fft_make(DEGREE, c);
+
+	fft_calc__(DEGREE, c, out, p1, p0, 1);
+	free(c);
+
+	calcFFT(BUF_SIZE, delta, out, logfile);
 
 	fclose(logfile);
-	free(buffer);
 	exit(0);
 }
 
